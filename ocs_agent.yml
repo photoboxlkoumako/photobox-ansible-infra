@@ -1,0 +1,5 @@
+---
+- hosts: deployment_group
+  gather_facts: no
+  roles:
+    - { role: ocs_agent, sudo: yes }

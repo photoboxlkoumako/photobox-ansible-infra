@@ -1,0 +1,27 @@
+ocsagent_version: "2.1.1"
+os_system_packages: 
+  - gcc
+  - make
+  - dmidecode
+  - ipmitool
+#  - cpanminus
+  - libtest-xml-simple-perl
+  - libnet-ip-perl
+  - libcrypt-ssleay-perl
+  - libio-compress-perl
+  - libxml-simple-perl
+  - libclass-dbi-perl
+  - libdbd-mysql 
+  - libapache-dbi-perl
+  - libxml-parser-perl 
+  - libsoap-lite-perl
+  - libproc-daemon-perl
+  - libproc-pid-file-perl
+  - ethtool
+  
+
+#perl_cpan_packages: 
+#  - SOAP::Lite
+#  - Proc::Daemon
+#  - Proc::PID::File
+#  - Linux::Ethtool

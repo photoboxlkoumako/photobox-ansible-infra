@@ -1,0 +1,66 @@
+- apt: update_cache=yes cache_valid_time=3600
+
+- name: Cleaning old OCS-INVENTORY files 1/2
+  file: path={{item}} state=absent
+  with_items:
+    - /etc/cron.d/ocsinventory-client
+    - /bin/ocsinv
+    - /etc/logrotate.d/ocsinventory-client
+    - /usr/local/share/perl/5.14.2/ocsiventory/ocsinventory-client.pl
+
+- name: Cleaning old OCS-INVENTORY files 2/2
+  file: path={{item}} state=absent
+  with_items:
+    - /etc/ocsinventory-client/
+    - /var/log/ocsinventory-client
+
+- name: Install packages for CPANMINUS
+  apt: name={{item}} state=present
+  with_items: os_system_packages
+
+#- name: Install Perl packages
+#  cpanm: name={{item}} notest=yes
+#  with_items: perl_cpan_packages
+
+- name: Unarchive OCS Agent package
+  unarchive: src=../files/Ocsinventory-Unix-agent-{{ocsagent_version}}.tar.gz dest=/tmp
+
+- name: Making required directories for OCS AGENT
+  file: path={{item}} state=directory mode=0755
+  with_items:
+    - /etc/ocsinventory-agent
+    - /var/lib/ocsinventory-agent
+    - /var/log/ocsinventory-agent
+
+- name: Install OCS
+  shell: env PERL_AUTOINSTALL=1 perl Makefile.PL && make && make install
+  args:
+    chdir: /tmp/Ocsinventory-Unix-Agent-{{ocsagent_version}}
+
+- name: Add entry on root crontab to allow daily inventory
+  cron: name="ocsinventory-agent daily run" weekday="1,7" minute=0 hour=4
+        user="root" job="/usr/local/bin/ocsinventory-agent"
+        cron_file=ocsinventory-agent
+  
+- name: BRAIN2 | Copy ocs agent configuration file on /etc/ocsinventory-agent
+  copy: src=../files/ocsinventory-agent_brain2.cfg dest=/etc/ocsinventory-agent/ocsinventory-agent.cfg
+  when: '"brain2servers" in group_names'
+
+- name: BRAIN3 | Copy ocs agent configuration file on /etc/ocsinventory-agent
+  copy: src=../files/ocsinventory-agent_brain3.cfg dest=/etc/ocsinventory-agent/ocsinventory-agent.cfg
+  when: '"brain3servers" in group_names'
+
+- name: BRAIN3 | Copy ocs agent configuration file on /etc/ocsinventory-agent
+  copy: src=../files/ocsinventory-agent_brain3.cfg dest=/etc/ocsinventory-agent/ocsinventory-agent.cfg
+  when: '"deployment_group" in group_names'
+
+- name: BRAIN4 | Copy ocs agent configuration file on /etc/ocsinventory-agent
+  copy: src=../files/ocsinventory-agent_brain4.cfg dest=/etc/ocsinventory-agent/ocsinventory-agent.cfg
+  when: '"brain4servers" in group_names'
+
+- name: BRAIN4 | Copy ocs agent configuration file on /etc/ocsinventory-agent
+  copy: src=../files/ocsinventory-agent_brain4.cfg dest=/etc/ocsinventory-agent/ocsinventory-agent.cfg
+  when: '"brain4testservers" in group_names'
+
+- name: Execute the agent
+  command: /usr/local/bin/ocsinventory-agent
